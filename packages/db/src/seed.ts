@@ -54,7 +54,7 @@ const [goal] = await db
     title: "Ship V1",
     description: "Deliver first control plane release",
     level: "company",
-    status: "active",
+    status: "planned",
     ownerAgentId: ceo!.id,
   })
   .returning();
@@ -66,7 +66,7 @@ const [project] = await db
     goalId: goal!.id,
     name: "Control Plane MVP",
     description: "Implement core board + agent loop",
-    status: "in_progress",
+    status: "backlog",
     leadAgentId: ceo!.id,
   })
   .returning();

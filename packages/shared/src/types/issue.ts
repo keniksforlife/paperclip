@@ -1,5 +1,5 @@
-import type { IssuePriority, IssueStatus } from "../constants.js";
-import type { Goal } from "./goal.js";
+import type { IssuePriority, IssueStatus } from "../constants.ts";
+import type { Goal } from "./goal.ts";
 import type { Project, ProjectWorkspace } from "./project.js";
 import type { IssueExecutionWorkspaceSettings } from "./workspace-runtime.js";
 

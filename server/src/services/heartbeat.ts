@@ -1876,6 +1876,15 @@ export function heartbeatService(db: Db) {
               sessionRotationReason: sessionCompaction.reason,
               ...(adapterResult.costUsd != null ? { costUsd: adapterResult.costUsd } : {}),
               ...(adapterResult.billingType ? { billingType: adapterResult.billingType } : {}),
+              // Derived fields for token optimization plan
+              promptChars: JSON.stringify(context).length,
+              instructionsChars: context.paperclipRuntimeServiceIntents ? JSON.stringify(context.paperclipRuntimeServiceIntents).length : 0,
+              hasInstructionsFile: Array.isArray(context.paperclipRuntimeServiceIntents) && context.paperclipRuntimeServiceIntents.length > 0,
+              skillCount: Array.isArray(context.paperclipRuntimeServiceIntents) ? context.paperclipRuntimeServiceIntents.length : 0,
+              // Placeholder for skillSetHash, needs further investigation and implementation
+              skillSetHash: agent.adapterType, // Placeholder: Needs proper implementation
+              // Infer contextFetchMode based on invocation source and session status
+              contextFetchMode: run.invocationSource === "timer" || (run.status === "running" && !taskSessionForRun) ? "delta" : "full", // Simplified inference
             } as Record<string, unknown>)
           : null;
 

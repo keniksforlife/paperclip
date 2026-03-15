@@ -782,6 +782,35 @@ export function issueService(db: Db) {
           await syncIssueLabels(updated.id, existing.companyId, nextLabelIds, tx);
         }
         const [enriched] = await withIssueLabels(tx, [updated]);
+
+        // Check if the updated issue's status is terminal and if it affects a parent goal's completion.
+        if (enriched && (enriched.status === 'done' || enriched.status === 'cancelled') && enriched.goalId) {
+            const goalId = enriched.goalId;
+            // Check if this issue was the last open one for the goal
+            const openIssuesCount = await tx.countOpenIssues(goalId); // Assuming issueService is correctly instantiated with tx
+            if (openIssuesCount === 0) {
+                const goal = await tx.getById(goalId); // Assuming goalService is correctly instantiated with tx
+                if (goal) {
+                    const targetAgentId = goal.ownerAgentId ?? (await resolveCeoAgentId(tx, goal.companyId));
+                    if (targetAgentId) {
+                        const heartbeatServiceInstance = heartbeatService(tx); // Assuming heartbeatService can be instantiated with tx
+                        void heartbeatServiceInstance
+                            .wakeup(targetAgentId, {
+                                source: "automation",
+                                triggerDetail: "system",
+                                reason: "goal_work_complete",
+                                payload: { goalId: goal.id },
+                                contextSnapshot: {
+                                    goalId: goal.id,
+                                    wakeReason: "goal_work_complete",
+                                    source: "issue.completion_detected",
+                                },
+                            })
+                            .catch((err) => logger.warn({ err, goalId: goal.id }, "failed to wake agent on goal work completion"));
+                    }
+                }
+            }
+        }
         return enriched;
       });
     },
@@ -1024,6 +1053,8 @@ export function issueService(db: Db) {
           status: "todo",
           assigneeAgentId: null,
           checkoutRunId: null,
+          executionRunId: null,
+          executionLockedAt: null,
           updatedAt: new Date(),
         })
         .where(eq(issues.id, id))
