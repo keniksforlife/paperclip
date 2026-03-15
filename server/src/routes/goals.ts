@@ -133,6 +133,27 @@ export function goalRoutes(db: Db) {
             .catch((err) => logger.warn({ err, goalId: goal.id }, "failed to wake agent on goal activation"));
         }
       })();
+
+    // Goal activation wakeup: fire when status transitions to "active"
+    if (existing.status !== "active" && goal.status === "active") {
+      void (async () => {
+        const targetAgentId = goal.ownerAgentId ?? (await resolveCeoAgentId(db, goal.companyId));
+        if (targetAgentId) {
+          heartbeat
+            .wakeup(targetAgentId, {
+              source: "automation",
+              triggerDetail: "system",
+              reason: "goal_activated",
+              payload: { goalId: goal.id, mutation: "activate" },
+              contextSnapshot: {
+                goalId: goal.id,
+                wakeReason: "goal_activated",
+                source: "goal.activated",
+              },
+            })
+            .catch((err) => logger.warn({ err, goalId: goal.id }, "failed to wake agent on goal activation"));
+        }
+      })();
     }
 
     // Subgoal completion detection: when a child goal transitions to "achieved",
@@ -165,7 +186,6 @@ export function goalRoutes(db: Db) {
     }
 
     res.json(goal);
-  });
 
   // Pursue endpoint: opt existing active goals into automation
   router.post("/goals/:id/pursue", async (req, res) => {

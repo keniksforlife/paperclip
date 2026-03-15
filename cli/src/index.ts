@@ -17,6 +17,7 @@ import { registerActivityCommands } from "./commands/client/activity.js";
 import { registerDashboardCommands } from "./commands/client/dashboard.js";
 import { applyDataDirOverride, type DataDirOptionLike } from "./config/data-dir.js";
 import { loadPaperclipEnvFile } from "./config/env.js";
+import { openclaw } from "./commands/openclaw.js";
 import { registerWorktreeCommands } from "./commands/worktree.js";
 
 const program = new Command();
@@ -46,6 +47,13 @@ program
   .option("-y, --yes", "Accept defaults (quickstart + start immediately)", false)
   .option("--run", "Start Paperclip immediately after saving config", false)
   .action(onboard);
+
+program
+  .command("openclaw")
+  .description("Run openclaw agent")
+  .option("-c, --config <path>", "Path to config file")
+  .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
+  .action(openclaw);
 
 program
   .command("doctor")
