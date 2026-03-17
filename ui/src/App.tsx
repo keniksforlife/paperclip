@@ -35,6 +35,8 @@ import { queryKeys } from "./lib/queryKeys";
 import { useCompany } from "./context/CompanyContext";
 import { useDialog } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
+// Import the new showcase page
+import ECommerceShowcasePage from "./pages/ECommerceShowcasePage";
 
 function BootstrapPendingPage({ hasActiveInvite = false }: { hasActiveInvite?: boolean }) {
   return (
@@ -151,6 +153,8 @@ function boardRoutes() {
       <Route path="inbox/new" element={<Navigate to="/inbox/recent" replace />} />
       <Route path="design-guide" element={<DesignGuide />} />
       <Route path="tests/ux/runs" element={<RunTranscriptUxLab />} />
+      {/* Add the route for the new E-commerce Showcase page */}
+      <Route path="ecommerce-showcase" element={<ECommerceShowcasePage />} />
       <Route path="*" element={<NotFoundPage scope="board" />} />
     </>
   );
